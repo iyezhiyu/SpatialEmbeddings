@@ -12,6 +12,11 @@ Our network architecture is a multi-branched version of [ERFNet](https://github.
     <img src="static/teaser.jpg" />
 </p>
 
+## Branches of this repo
+
+- master: single sigma, one class
+- multiclass: single sigma, 8 classes
+
 ## License
 
 This software is released under a creative commons license which allows for personal and research use only. For a commercial license please contact the authors. You can view a license summary [here](http://creativecommons.org/licenses/by-nc/4.0/).
