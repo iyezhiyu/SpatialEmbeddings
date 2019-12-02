@@ -1,4 +1,4 @@
-# Instance segmentation by jointly optimizing spatial embeddings and clustering bandwidth
+# Instance segmentation by jointly optimizing spatial embeddings and clustering bandwidth (elliptical)
 
 This codebase implements the loss function described in: 
 
@@ -12,11 +12,9 @@ Our network architecture is a multi-branched version of [ERFNet](https://github.
     <img src="static/teaser.jpg" />
 </p>
 
-## Branches of this repo
+## TODO
 
-- master: single sigma, one class
-- multiclass: single sigma, eight classes
-- elliptical: two sigma, one class
+Modified the code to the elliptical version
 
 ## License
 
@@ -24,7 +22,7 @@ This software is released under a creative commons license which allows for pers
 
 ## Getting started
 
-This codebase showcases the proposed loss function on car instance segmentation using the Cityscapes dataset. 
+This codebase showcases the proposed loss function with the elliptical margin version on car instance segmentation using the Cityscapes dataset. 
 
 ### Prerequisites
 Dependencies: 
@@ -37,28 +35,25 @@ Training consists out of 2 steps. We first train on 512x512 crops around each ob
 
 To generate these crops do the following:
 ```
-$ CITYSCAPES_DIR=/path/to/cityscapes/ python utils/generate_crops.py
+$ sh generate.sh
 ``` 
 
 Afterwards start training: 
 ```
-$ CITYSCAPES_DIR=/path/to/cityscapes/ python train.py
+$ sh train.sh
 ```
 
 Different options can be modified in `train_config.py`, e.g. to visualize set `display=True`.
 
 ## Testing
 
-You can download a pretrained model [here](https://drive.google.com/file/d/1BXxhYeg78mrkMNOReQWhBEcTu18_kFA0/view?usp=sharing). Save this file in the src/pretrained_models/ or adapt the test_config.py file.
+Save the pretrained models in the src/pretrained_models/ or adapt the test_config.py file.
 
 To test the model on the Cityscapes validation set run:
 
 ```
-$ CITYSCAPES_DIR=/path/to/cityscapes/ python test.py
+$ sh test.sh
 ```
-
-The pretrained model gets 56.4 AP on the car validation set. 
-
 
 ## Acknowledgement
 This work was supported by Toyota, and was carried out at the TRACE Lab at KU Leuven (Toyota Research on Automated Cars in Europe - Leuven)
