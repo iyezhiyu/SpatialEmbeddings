@@ -15,7 +15,8 @@ Our network architecture is a multi-branched version of [ERFNet](https://github.
 ## Branches of this repo
 
 - master: single sigma, one class
-- multiclass: single sigma, 8 classes
+- multiclass: single sigma, eight classes
+- elliptical: two sigma, one class
 
 ## License
 
