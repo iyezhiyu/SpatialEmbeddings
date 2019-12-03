@@ -14,7 +14,7 @@ Our network architecture is a multi-branched version of [ERFNet](https://github.
 
 ## TODO
 
-Modified the code to the elliptical version
+Modified the "display" part to the elliptical version
 
 ## License
 
