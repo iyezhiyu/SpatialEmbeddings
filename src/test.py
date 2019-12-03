@@ -43,11 +43,13 @@ model = get_model(args['model']['name'], args['model']['kwargs'])
 model = torch.nn.DataParallel(model).to(device)
 
 # load snapshot
-if os.path.exists(args['checkpoint_path']):
-    state = torch.load(args['checkpoint_path'])
-    model.load_state_dict(state['model_state_dict'], strict=True)
-else:
-    assert(False, 'checkpoint_path {} does not exist!'.format(args['checkpoint_path']))
+#if os.path.exists(args['checkpoint_path']):
+#    state = torch.load(args['checkpoint_path'])
+#    model.load_state_dict(state['model_state_dict'], strict=True)
+#else:
+#    assert(False, 'checkpoint_path {} does not exist!'.format(args['checkpoint_path']))
+state = torch.load(args['checkpoint_path'])
+model.load_state_dict(state['model_state_dict'], strict=True)
 
 model.eval()
 
@@ -65,7 +67,7 @@ with torch.no_grad():
         instances = sample['instance'].squeeze()
         
         output = model(im)
-        instance_map, predictions = cluster.cluster(output[0], threshold=0.9)
+        instance_map, predictions = cluster.cluster(output[0], n_sigma=2, threshold=0.9)
 
         if args['display']:
 

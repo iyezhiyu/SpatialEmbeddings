@@ -92,7 +92,7 @@ class SpatialEmbLoss(nn.Module):
 
                 s = torch.exp(s*10)
 
-                # calculate gaussian
+                # calculate gaussian, when n_sigma = 2, it is elliptical margin
                 dist = torch.exp(-1*torch.sum(
                     torch.pow(spatial_emb - center, 2)*s, 0, keepdim=True))
 

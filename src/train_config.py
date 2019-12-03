@@ -15,7 +15,7 @@ CITYSCAPES_DIR=os.environ.get('CITYSCAPES_DIR')
 args = dict(
 
     cuda=True,
-    display=True,
+    display=False,
     display_it=5,
 
     save=True,
@@ -45,8 +45,8 @@ args = dict(
                 },
             ]),
         },
-        'batch_size': 16,
-        'workers': 8
+        'batch_size': 2,
+        'workers': 6
     }, 
 
     val_dataset = {
@@ -64,24 +64,24 @@ args = dict(
                 },
             ]),
         },
-        'batch_size': 16,
-        'workers': 8
+        'batch_size': 12,
+        'workers': 6
     }, 
 
     model = {
         'name': 'branched_erfnet', 
         'kwargs': {
-            'num_classes': [3,1]
+            'num_classes': [4,1]
         }
     }, 
 
     lr=5e-4,
-    n_epochs=200,
+    n_epochs=2,
 
     # loss options
     loss_opts={
         'to_center': True,
-        'n_sigma': 1,
+        'n_sigma': 2,
         'foreground_weight': 10,
     },
     loss_w={
