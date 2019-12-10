@@ -15,7 +15,7 @@ CITYSCAPES_DIR=os.environ.get('CITYSCAPES_DIR')
 args = dict(
 
     cuda=True,
-    display=True,
+    display=False,
     display_it=5,
 
     save=True,
@@ -45,8 +45,8 @@ args = dict(
                 },
             ]),
         },
-        'batch_size': 16,
-        'workers': 8
+        'batch_size': 2,
+        'workers': 6
     }, 
 
     val_dataset = {
@@ -64,25 +64,25 @@ args = dict(
                 },
             ]),
         },
-        'batch_size': 16,
-        'workers': 8
+        'batch_size': 12,
+        'workers': 6
     }, 
 
     model = {
         'name': 'branched_erfnet', 
         'kwargs': {
-            'num_classes': [3,1]
+            'num_classes': [3, 8] #3代表一维sigma和x和y的offset，8代表8个class，sigma可以拓展为二维的
         }
     }, 
 
     lr=5e-4,
-    n_epochs=200,
+    n_epochs=2,
 
     # loss options
     loss_opts={
         'to_center': True,
         'n_sigma': 1,
-        'foreground_weight': 10,
+        'foreground_weight': [1,1,1,1,1,1,1,1], #8个种类，具体计算方法参见ERFNet，在此先均以1代替，此fg weight对不平衡数据集作用很大
     },
     loss_w={
         'w_inst': 1,

@@ -30,7 +30,7 @@ def process(tup):
     w, h = image.size
 
     instance_np = np.array(instance, copy=False)
-    object_mask = np.logical_and(instance_np >= OBJ_ID * 1000, instance_np < (OBJ_ID + 1) * 1000)
+    object_mask = np.logical_or(np.logical_and(instance_np >= 24 * 1000, instance_np < 29 * 1000), np.logical_and(instance_np >= 31 * 1000, instance_np < 34 * 1000)) # 8个class中instance编码的范围
     
     ids = np.unique(instance_np[object_mask])
     ids = ids[ids!= 0]
@@ -57,7 +57,7 @@ if __name__ == '__main__':
 
     IMAGE_DIR=os.path.join(CITYSCAPES_DIR, 'leftImg8bit')
     INSTANCE_DIR=os.path.join(CITYSCAPES_DIR, 'gtFine')
-    OBJ_ID = 26
+    #OBJ_ID = [24, 25, 26, 27, 28, 31, 32, 33]  #论文里的八个种类
     CROP_SIZE=512
 
     # load images/instances

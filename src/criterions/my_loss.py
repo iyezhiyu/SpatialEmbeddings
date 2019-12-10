@@ -13,9 +13,10 @@ from criterions.lovasz_losses import lovasz_hinge
 
 class SpatialEmbLoss(nn.Module):
 
-    def __init__(self, to_center=True, n_sigma=1, foreground_weight=1,):
+    def __init__(self, to_center=True, n_sigma=1, foreground_weight=[1,1,1,1,1,1,1,1,1],):
         super().__init__()
 
+        
         print('Created spatial emb loss function with: to_center: {}, n_sigma: {}, foreground_weight: {}'.format(
             to_center, n_sigma, foreground_weight))
 
@@ -32,7 +33,7 @@ class SpatialEmbLoss(nn.Module):
 
         self.register_buffer("xym", xym)
 
-    def forward(self, prediction, instances, labels, w_inst=1, w_var=10, w_seed=1, iou=False, iou_meter=None):
+    def forward(self, prediction, instances, labels, w_inst=1, w_var=1, w_seed=1, iou=False, iou_meter=None):
 
         batch_size, height, width = prediction.size(
             0), prediction.size(2), prediction.size(3)
@@ -46,7 +47,7 @@ class SpatialEmbLoss(nn.Module):
             spatial_emb = torch.tanh(prediction[b, 0:2]) + xym_s  # 2 x h x w
             sigma = prediction[b, 2:2+self.n_sigma]  # n_sigma x h x w
             seed_map = torch.sigmoid(
-                prediction[b, 2+self.n_sigma:2+self.n_sigma + 1])  # 1 x h x w
+                prediction[b, 2+self.n_sigma:2+self.n_sigma + 8])  # 8 x h x w, 8个class
 
             # loss accumulators
             var_loss = 0
@@ -61,14 +62,21 @@ class SpatialEmbLoss(nn.Module):
             instance_ids = instance_ids[instance_ids != 0]
 
             # regress bg to zero
-            bg_mask = label == 0
-            if bg_mask.sum() > 0:
-                seed_loss += torch.sum(
-                    torch.pow(seed_map[bg_mask] - 0, 2))
+            for i in range(1, 9):
+                bg_mask = (label != i)
+                if bg_mask.sum() > 0:
+                    #print("=============")
+                    #print(i)
+                    #print(bg_mask.shape)
+                    #print(seed_map.shape)
+                    #print(seed_map[i-1].unsqueeze(0).shape)
+                    seed_loss += torch.sum(torch.pow((seed_map[i-1].unsqueeze(0))[bg_mask] - 0, 2))
 
             for id in instance_ids:
 
                 in_mask = instance.eq(id)   # 1 x h x w
+
+                class_id = int(np.unique(label[in_mask].cpu().numpy()))
 
                 # calculate center of attraction
                 if self.to_center:
@@ -101,8 +109,8 @@ class SpatialEmbLoss(nn.Module):
                     lovasz_hinge(dist*2-1, in_mask)
 
                 # seed loss
-                seed_loss += self.foreground_weight * torch.sum(
-                    torch.pow(seed_map[in_mask] - dist[in_mask].detach(), 2))
+                seed_loss += self.foreground_weight[class_id-1] * torch.sum(
+                    torch.pow(seed_map[class_id-1][in_mask.squeeze(0)].unsqueeze(0) - dist[in_mask].detach(), 2))
 
                 # calculate instance iou
                 if iou:

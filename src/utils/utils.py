@@ -14,6 +14,7 @@ from PIL import Image
 
 import torch
 
+class_ids = [24, 25, 26, 27, 28, 31, 32, 33]
 
 class AverageMeter(object):
 
@@ -140,49 +141,56 @@ class Cluster:
         
         spatial_emb = torch.tanh(prediction[0:2]) + xym_s  # 2 x h x w
         sigma = prediction[2:2+n_sigma]  # n_sigma x h x w
-        seed_map = torch.sigmoid(prediction[2+n_sigma:2+n_sigma + 1])  # 1 x h x w
-       
+        seed_maps = torch.sigmoid(prediction[2+n_sigma:2+n_sigma + 8])  # 8 x h x w
+        
         instance_map = torch.zeros(height, width).byte()
         instances = []
 
         count = 1
-        mask = seed_map > 0.5
 
-        if mask.sum() > 128:
 
-            spatial_emb_masked = spatial_emb[mask.expand_as(spatial_emb)].view(2, -1)
-            sigma_masked = sigma[mask.expand_as(sigma)].view(n_sigma, -1)
-            seed_map_masked = seed_map[mask].view(1, -1)
+        #对每个seed map(每个物体种类)分别做一次cluster
+        for i in range(8):
+            
+            seed_map = seed_maps[i].unsqueeze(0)
 
-            unclustered = torch.ones(mask.sum()).byte().cuda()
-            instance_map_masked = torch.zeros(mask.sum()).byte().cuda()
+            mask = seed_map > 0.5
 
-            while(unclustered.sum() > 128):
+            if mask.sum() > 128:
 
-                seed = (seed_map_masked * unclustered.float()).argmax().item()
-                seed_score = (seed_map_masked * unclustered.float()).max().item()
-                if seed_score < threshold:
-                    break
-                center = spatial_emb_masked[:, seed:seed+1]
-                unclustered[seed] = 0
-                s = torch.exp(sigma_masked[:, seed:seed+1]*10)
-                dist = torch.exp(-1*torch.sum(torch.pow(spatial_emb_masked -
-                                                        center, 2)*s, 0, keepdim=True))
+                spatial_emb_masked = spatial_emb[mask.expand_as(spatial_emb)].view(2, -1)
+                sigma_masked = sigma[mask.expand_as(sigma)].view(n_sigma, -1)
+                seed_map_masked = seed_map[mask].view(1, -1)
 
-                proposal = (dist > 0.5).squeeze()
+                unclustered = torch.ones(mask.sum()).byte().cuda()
+                instance_map_masked = torch.zeros(mask.sum()).byte().cuda()
 
-                if proposal.sum() > 128:
-                    if unclustered[proposal].sum().float()/proposal.sum().float() > 0.5:
-                        instance_map_masked[proposal.squeeze()] = count
-                        instance_mask = torch.zeros(height, width).byte()
-                        instance_mask[mask.squeeze().cpu()] = proposal.cpu()
-                        instances.append(
-                            {'mask': instance_mask.squeeze()*255, 'score': seed_score})
-                        count += 1
+                while(unclustered.sum() > 128):
 
-                unclustered[proposal] = 0
+                    seed = (seed_map_masked * unclustered.float()).argmax().item()
+                    seed_score = (seed_map_masked * unclustered.float()).max().item()
+                    if seed_score < threshold:
+                        break
+                    center = spatial_emb_masked[:, seed:seed+1]
+                    unclustered[seed] = 0
+                    s = torch.exp(sigma_masked[:, seed:seed+1]*10)
+                    dist = torch.exp(-1*torch.sum(torch.pow(spatial_emb_masked -
+                                                            center, 2)*s, 0, keepdim=True))
 
-            instance_map[mask.squeeze().cpu()] = instance_map_masked.cpu()
+                    proposal = (dist > 0.5).squeeze()
+
+                    if proposal.sum() > 128:
+                        if unclustered[proposal].sum().float()/proposal.sum().float() > 0.5:
+                            instance_map_masked[proposal.squeeze()] = count
+                            instance_mask = torch.zeros(height, width).byte()
+                            instance_mask[mask.squeeze().cpu()] = proposal.cpu()
+                            instances.append(
+                                {'mask': instance_mask.squeeze()*255, 'score': seed_score, 'label': class_ids[i]})
+                            count += 1
+
+                    unclustered[proposal] = 0
+
+                instance_map[mask.squeeze().cpu()] = instance_map_masked.cpu()
 
         return instance_map, instances
 

@@ -15,11 +15,11 @@ CITYSCAPES_DIR=os.environ.get('CITYSCAPES_DIR')
 args = dict(
 
     cuda=True,
-    display=True,
+    display=False,
 
-    save=False,
+    save=True,
     save_dir='./masks/',
-    checkpoint_path='./pretrained_models/cars_pretrained_model.pth',
+    checkpoint_path='./pretrained_models/best_iou_model.pth',
 
     dataset= { 
         'name': 'cityscapes',
@@ -41,7 +41,7 @@ args = dict(
     model = {
         'name': 'branched_erfnet',
         'kwargs': {
-            'num_classes': [3, 1],
+            'num_classes': [3, 8],
         }
     }
 )

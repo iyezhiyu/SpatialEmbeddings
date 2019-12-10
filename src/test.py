@@ -17,6 +17,8 @@ from utils.utils import Cluster, Visualizer
 
 torch.backends.cudnn.benchmark = True
 
+class_ids = [24, 25, 26, 27, 28, 31, 32, 33]
+
 args = test_config.get_args()
 
 if args['display']:
@@ -43,11 +45,13 @@ model = get_model(args['model']['name'], args['model']['kwargs'])
 model = torch.nn.DataParallel(model).to(device)
 
 # load snapshot
-if os.path.exists(args['checkpoint_path']):
-    state = torch.load(args['checkpoint_path'])
-    model.load_state_dict(state['model_state_dict'], strict=True)
-else:
-    assert(False, 'checkpoint_path {} does not exist!'.format(args['checkpoint_path']))
+#if os.path.exists(args['checkpoint_path']):
+#    state = torch.load(args['checkpoint_path'])
+#    model.load_state_dict(state['model_state_dict'], strict=True)
+#else:
+#    assert(False, 'checkpoint_path {} does not exist!'.format(args['checkpoint_path']))
+state = torch.load(args['checkpoint_path'])
+model.load_state_dict(state['model_state_dict'], strict=True)
 
 model.eval()
 
@@ -65,7 +69,7 @@ with torch.no_grad():
         instances = sample['instance'].squeeze()
         
         output = model(im)
-        instance_map, predictions = cluster.cluster(output[0], threshold=0.9)
+        instance_map, predictions = cluster.cluster(output[0], threshold=0.1)
 
         if args['display']:
 
@@ -98,6 +102,6 @@ with torch.no_grad():
                     im.save(os.path.join(args['save_dir'], im_name))
 
                     # write to file
-                    cl = 26
+                    cl = pred['label']
                     score = pred['score']
                     f.writelines("{} {} {:.02f}\n".format(im_name, cl, score))

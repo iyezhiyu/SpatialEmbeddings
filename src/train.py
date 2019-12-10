@@ -112,6 +112,7 @@ def train(epoch):
         loss.backward()
         optimizer.step()
 
+        '''
         if args['display'] and i % args['display_it'] == 0:
             with torch.no_grad():
                 visualizer.display(im[0], 'image')
@@ -126,7 +127,8 @@ def train(epoch):
 
                 seed = torch.sigmoid(output[0][3]).cpu()
                 visualizer.display(seed, 'seed')
-
+        '''
+        
         loss_meter.update(loss.item())
 
     return loss_meter.avg
@@ -152,20 +154,20 @@ def val(epoch):
                             args['loss_w'], iou=True, iou_meter=iou_meter)
             loss = loss.mean()
 
-            if args['display'] and i % args['display_it'] == 0:
-                with torch.no_grad():
-                    visualizer.display(im[0], 'image')
-                
-                    predictions = cluster.cluster_with_gt(output[0], instances[0], n_sigma=args['loss_opts']['n_sigma'])
-                    visualizer.display([predictions.cpu(), instances[0].cpu()], 'pred')
-    
-                    sigma = output[0][2].cpu()
-                    sigma = (sigma - sigma.min())/(sigma.max() - sigma.min())
-                    sigma[instances[0] == 0] = 0
-                    visualizer.display(sigma, 'sigma')
-    
-                    seed = torch.sigmoid(output[0][3]).cpu()
-                    visualizer.display(seed, 'seed')
+            #if args['display'] and i % args['display_it'] == 0:
+            #    with torch.no_grad():
+            #        visualizer.display(im[0], 'image')
+            #    
+            #        predictions = cluster.cluster_with_gt(output[0], instances[0], n_sigma=args['loss_opts']['n_sigma'])
+            #        visualizer.display([predictions.cpu(), instances[0].cpu()], 'pred')
+            #    
+            #        sigma = output[0][2].cpu()
+            #        sigma = (sigma - sigma.min())/(sigma.max() - sigma.min())
+            #        sigma[instances[0] == 0] = 0
+            #        visualizer.display(sigma, 'sigma')
+            # 
+            #        seed = torch.sigmoid(output[0][3]).cpu()
+            #        visualizer.display(seed, 'seed')
 
             loss_meter.update(loss.item())
 
